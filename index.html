@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Burgercodering</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100% - 10vh);
+      border: 10px solid black;
+    }
+
+    .left,
+    .right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-right: 10px solid black;
+      color: white;
+    }
+
+    .left {
+      background-color: green;
+      color: white;
+    }
+
+    .right {
+      background-color: red;
+      color: white;
+    }
+
+    .number {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 30vw;
+      height: 100%;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 2;
+      font-family: Arial;
+    }
+
+    .blink-left {
+      background-color: green;
+      color: white;
+      animation: blink-left 0.5s ease-in-out 0s infinite alternate;
+      z-index: 1;
+    }
+
+    .blink-right {
+      background-color: red;
+      color: white;
+      animation: blink-right 0.5s ease-in-out 0s infinite alternate;
+      z-index: 1;
+    }
+
+    @keyframes blink-left {
+      0% {
+        background-color: green;
+      }
+
+      50% {
+        background-color: black;
+      }
+
+      100% {
+        background-color: green;
+      }
+    }
+
+    @keyframes blink-right {
+      0% {
+        background-color: red;
+      }
+
+      50% {
+        background-color: black;
+      }
+
+      100% {
+        background-color: red;
+      }
+    }
+
+    .timer-bar {
+      background-color: black;
+      height: 10vh;
+      width: 90%;
+      bottom: 0;
+      top: unset;
+      left: 0;
+      width: 100%;
+      position: fixed;
+      
+    }
+
+    .timer-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 90%;
+
+}
+
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: white;
+  font-family: Arial;
+}
+img {
+  position: absolute;
+  top: 50%;
+  left: calc(90% + 10px);;
+  transform: translate(0, -50%);
+  max-width: 9%;
+  max-height: 7vh;
+  z-index: 5;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  height: 50%;
+  width: 90%;
+  background-color: green;
+  color: white;
+  transition: width 1s linear;
+  transform: translateY(-50%);
+}
+.progress-bar.active {
+  width: 90%; /* de breedte van de voortgangsbalk is nu 80% van de container */
+}
+.progress-bar.red {
+  background-color: red;
+  
+}
+
+.timer-container.clicked .progress-bar {
+  animation: reset 60s linear;
+}
+
+@keyframes reset {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+  </style>
+</head>
+
+<body>
+
+  <div class="timer-bar">
+    <div class="timer-container">
+  <div class="progress-bar"></div>
+      <span class="progress-text"></span>
+      <img id="reset-button" src="handwashwhite.png" alt="timerreset">
+      
+</div>
+
+  </div>
+  <div class="container">
+    <div class="left">
+      <div class="number green-number"></div>
+    </div>
+    <div class="right">
+      <div class="number red-number"></div>
+    </div>
+
+    <script>
+      function updateNumbers(timestamp) {
+        const now = new Date();
+        const minutes = now.getMinutes();
+        const redNumber = ((Math.ceil(minutes / 5) % 12 || 12) - 1) || 12;
+        const greenNumber = (((redNumber + 4) % 12 || 12)) || 12;
+
+        const greenDiv = document.querySelector('.green-number');
+        const redDiv = document.querySelector('.red-number');
+
+        if (greenDiv.textContent != greenNumber.toString()) {
+          greenDiv.textContent = greenNumber;
+          greenDiv.classList.remove('blink-left');
+          setTimeout(function () {
+            greenDiv.classList.add('blink-left');
+          }, 5);
+        }
+
+        if (redDiv.textContent != redNumber.toString()) {
+          redDiv.textContent = redNumber;
+          redDiv.classList.remove('blink-right');
+          setTimeout(function () {
+            redDiv.classList.add('blink-right');
+          }, 5);
+        }
+
+        setTimeout(function () {
+          greenDiv.classList.remove('blink-left');
+          redDiv.classList.remove('blink-right');
+          greenDiv.textContent = greenNumber;
+          redDiv.textContent = redNumber;
+        }, 9950);
+      }
+
+      // Update the numbers every second
+      setInterval(function () {
+        updateNumbers(performance.now());
+      }, 5000);
+
+
+const progressBar = document.querySelector('.progress-bar');
+const progressText = document.querySelector('.progress-text');
+const timerBar = document.querySelector('.timer-bar')
+      
+function startTimer(duration) {
+  let time = duration;
+  let timer = setInterval(function() {
+    progressBar.style.width = (time / duration) * 90 + '%'; // breedte van de voortgangsbalk is nu 80%
+    progressText.textContent = formatTime(time); // bijwerken van de resterende tijd
+    if (time <= 300) {
+      progressBar.classList.add('red');
+    }
+    if (time <= 0) {
+      time = duration;
+      progressBar.style.width = '0%'; // reset de breedte van de voortgangsbalk naar 0%
+      progressBar.classList.remove('red');
+    }
+    time -= 1;
+  }, 1000);
+  timerBar.addEventListener('click', function() {
+    clearInterval(timer);
+    startTimer(duration);
+  });
+}
+ 
+function formatTime(time) {
+  let minutes = Math.floor(time / 60);
+  let seconds = time % 60;
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; // formaat MM:SS
+}
+
+startTimer(3600);
+
+ //  const resetButton = document.getElementById("reset-button");
+//resetButton.addEventListener("click", resetTimer);
+
+//function resetTimer() {
+ // clearInterval(timer);
+ // startTimer(duration);
+//}
+
+    </script>
+</body>
+
+</html>
